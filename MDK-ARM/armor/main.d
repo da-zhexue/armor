@@ -21,6 +21,7 @@ armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
+armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
@@ -29,13 +30,15 @@ armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 armor\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+armor\main.o: ../Core/Inc/can.h
 armor\main.o: ../Core/Inc/dma.h
 armor\main.o: ../Core/Inc/i2c.h
 armor\main.o: ../Core/Inc/tim.h
 armor\main.o: ../Core/Inc/usart.h
 armor\main.o: ../Core/Inc/gpio.h
-armor\main.o: ..\BSP\bsp_dwt.h
-armor\main.o: ..\BSP\hx711.h
-armor\main.o: ..\BSP\typedef.h
+armor\main.o: ../BSP/bsp_dwt.h
+armor\main.o: ../BSP/hx711.h
+armor\main.o: ../BSP/typedef.h
 armor\main.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
 armor\main.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+armor\main.o: ../BSP/sk6812.h

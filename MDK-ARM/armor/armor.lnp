@@ -2,6 +2,7 @@
 "armor\startup_stm32f103xb.o"
 "armor\main.o"
 "armor\gpio.o"
+"armor\can.o"
 "armor\dma.o"
 "armor\i2c.o"
 "armor\tim.o"
@@ -9,7 +10,7 @@
 "armor\stm32f1xx_it.o"
 "armor\stm32f1xx_hal_msp.o"
 "armor\stm32f1xx_hal_gpio_ex.o"
-"armor\stm32f1xx_hal_i2c.o"
+"armor\stm32f1xx_hal_can.o"
 "armor\stm32f1xx_hal.o"
 "armor\stm32f1xx_hal_rcc.o"
 "armor\stm32f1xx_hal_rcc_ex.o"
@@ -20,6 +21,7 @@
 "armor\stm32f1xx_hal_flash.o"
 "armor\stm32f1xx_hal_flash_ex.o"
 "armor\stm32f1xx_hal_exti.o"
+"armor\stm32f1xx_hal_i2c.o"
 "armor\stm32f1xx_hal_tim.o"
 "armor\stm32f1xx_hal_tim_ex.o"
 "armor\stm32f1xx_hal_uart.o"
@@ -27,6 +29,7 @@
 "armor\bsp_dwt.o"
 "armor\bsp_led.o"
 "armor\hx711.o"
+"armor\sk6812.o"
 --strict --scatter "armor\armor.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "can.h"
 #include "dma.h"
 #include "i2c.h"
 #include "tim.h"
@@ -28,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "bsp_dwt.h"
 #include "hx711.h"
+#include "sk6812.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,14 +61,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void packed_uint32(uint32_t in, uint8_t* out)
-{
-  out[0] = in & 0xff;
-  out[1] = (in >> 8) & 0xff;
-  out[2] = (in >> 16) & 0xff;
-  out[3] = (in >> 24) & 0xff;
-}
-uint32_t value;
+
 /* USER CODE END 0 */
 
 /**
@@ -103,26 +98,28 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_USART1_UART_Init();
+  MX_CAN_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   DWT_Init(72);
-  hx711_init();
-  uint8_t send_data[] = {0x00, 0x00, 0x00, 0x00, 0x00};
+  SK6812_Init();
+  uint8_t send_data[] = {0x00};
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    value = hx711_read(1);
-    send_data[0] = 0x01;
-    packed_uint32(value, &send_data[1]);
+    const uint8_t hit = get_hit();
+    if (hit)
+      send_data[0] = 0x01;
+    else
+      send_data[0] = 0x00;
+    SK6812_LEDS_Task(hit);
     HAL_UART_Transmit(&huart1, send_data, sizeof(send_data), 100);
-    HAL_Delay(10);
-    value = hx711_read(2);
-    send_data[0] = 0x02;
-    packed_uint32(value, &send_data[1]);
-    HAL_UART_Transmit(&huart1, send_data, sizeof(send_data), 100);
-    HAL_Delay(100);
+
+    // printf_hx711_data();
+    // HAL_Delay(50);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

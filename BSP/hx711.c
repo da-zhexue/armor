@@ -1,91 +1,66 @@
 #include "hx711.h"
-#include "bsp_dwt.h"
 
-GPIO_TypeDef* sck_port[3] = {SCK1_GPIO_Port, SCK2_GPIO_Port, SCK3_GPIO_Port};
-uint16_t sck_pin[3] = {SCK1_Pin, SCK2_Pin, SCK3_Pin};
-GPIO_TypeDef* dout_port[3] = {DOUT1_GPIO_Port, DOUT2_GPIO_Port, DOUT3_GPIO_Port};
-uint16_t dout_pin[3] = {DOUT1_Pin, DOUT2_Pin, DOUT3_Pin};
+#include "bsp_dwt.h"
+#include "gpio.h"
+#include "usart.h"
+
 #define DELAY_1ms DWT_Delay_us(1)
 
-void hx711_init(void)
-{
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    GPIO_InitStruct.Pin = SCK1_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(SCK1_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = SCK2_Pin;
-    HAL_GPIO_Init(SCK2_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = DOUT1_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(DOUT1_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = DOUT2_Pin;
-    HAL_GPIO_Init(DOUT2_GPIO_Port, &GPIO_InitStruct);
-}
-
-void hx711_data_in(const uint8_t sensor)
-{
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    GPIO_InitStruct.Pin = dout_pin[sensor];
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(dout_port[sensor], &GPIO_InitStruct);
-}
-
-void hx711_data_out(const uint8_t sensor)
-{
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    GPIO_InitStruct.Pin = dout_pin[sensor];
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(dout_port[sensor], &GPIO_InitStruct);
-}
-
-uint32_t hx711_read(const uint8_t sensor)
+uint32_t hx711_read(const uint8_t id)
 {
     uint32_t value = 0;
 
-    hx711_data_out(sensor);
-    HAL_GPIO_WritePin(dout_port[sensor], dout_pin[sensor], GPIO_PIN_SET);
-    DELAY_1ms;
-    HAL_GPIO_WritePin(sck_port[sensor], sck_pin[sensor], GPIO_PIN_RESET);
-    hx711_data_in(sensor);
+    HX711_DOUT_HIGH(id);
+    HX711_SCK_LOW(id);
 
-    while (HAL_GPIO_ReadPin(dout_port[sensor], dout_pin[sensor]) == GPIO_PIN_SET)
+    while (HX711_DOUT(id))
         ;
-    DELAY_1ms;
 
     for (int i = 0; i < 24; i++)
     {
-        HAL_GPIO_WritePin(sck_port[sensor], sck_pin[sensor], GPIO_PIN_SET);
-        DELAY_1ms;
-        HAL_GPIO_WritePin(sck_port[sensor], sck_pin[sensor], GPIO_PIN_RESET);
-        if (HAL_GPIO_ReadPin(dout_port[sensor], dout_pin[sensor]) == GPIO_PIN_RESET)
-        {
-            value = value << 1;
-            value |= 0x00;
-        }
-        else
-        {
-            value = value << 1;;
+        HX711_SCK_HIGH(id);
+        HX711_SCK_LOW(id);
+        value = value << 1;
+        if (HX711_DOUT(id))
             value |= 0x01;
-        }
-        DELAY_1ms;
     }
-    HAL_GPIO_WritePin(sck_port[sensor], sck_pin[sensor], GPIO_PIN_SET);
+    HX711_SCK_HIGH(id);
     value = value ^ 0x800000;
-    DELAY_1ms;
-    HAL_GPIO_WritePin(sck_port[sensor], sck_pin[sensor], GPIO_PIN_RESET);
-    DELAY_1ms;
+    HX711_SCK_LOW(id);
     return value;
+}
+
+const uint8_t hx711_work[4] = {0, 1, 1, 1};
+const uint32_t hx711_hit_threshold[4] = {HIT_THRESHOLD_0, HIT_THRESHOLD_1, HIT_THRESHOLD_2, HIT_THRESHOLD_3};
+uint8_t get_hit()
+{
+    uint8_t hit = 0;
+    for (int i = 0; i < 4; i++)
+        if (hx711_work[i])
+            if (hx711_read(i) < hx711_hit_threshold[i])
+                hit = 1;
+    return hit;
+}
+
+void packed_uint32(const uint32_t in, uint8_t* out)
+{
+    out[0] = in & 0xff;
+    out[1] = (in >> 8) & 0xff;
+    out[2] = (in >> 16) & 0xff;
+    out[3] = (in >> 24) & 0xff;
+}
+
+void printf_hx711_data()
+{
+    uint8_t data[]={0x00, 0x00, 0x00, 0x00, 0x00};
+    for (int i = 0; i < 4; i++)
+    {
+        if (hx711_work[i])
+        {
+            data[0] = i;
+            const uint32_t value = hx711_read(i);
+            packed_uint32(value, &data[1]);
+            HAL_UART_Transmit(&huart1, data, sizeof(data), 100);
+        }
+    }
 }

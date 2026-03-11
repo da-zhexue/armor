@@ -31,6 +31,7 @@ float DWT_GetTimeline_ms(void);
 uint64_t DWT_GetTimeline_us(void);
 void DWT_Delay(float Delay);
 void DWT_Delay_us(uint32_t us);
+void DWT_Delay_ms(uint32_t ms);
 void DWT_SysTimeUpdate(void);
 
 extern DWT_Time_t SysTime;

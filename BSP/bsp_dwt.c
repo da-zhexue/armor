@@ -121,12 +121,17 @@ void DWT_Delay(float Delay)
     }
 }
 
-void DWT_Delay_us(uint32_t us)
+void DWT_Delay_us(const uint32_t us)
 {
-    uint32_t tickstart = DWT->CYCCNT;
-    uint32_t wait = us * CPU_FREQ_Hz_us;
+    const uint32_t tickstart = DWT->CYCCNT;
+    const uint32_t wait = us * CPU_FREQ_Hz_us;
 
     while ((DWT->CYCCNT - tickstart) < wait)
     {
     }
+}
+
+void DWT_Delay_ms(const uint32_t ms)
+{
+    DWT_Delay_us(1000 * ms);
 }
